@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      # 关键一步：校验黄金值 fixture 与安卓版完全一致。
+      # 只要有人改动内核而没有同步 fixture，这里就会红 —— 这是
+      # 「安卓和 iPhone 算出来一模一样」的强制保障。
+      - name: 校验黄金值与安卓版一致
+        run: |
+          echo "本仓库 fixture:"
+          shasum -a 256 docs/reference/golden-values.json
+          echo "若此值与安卓项目 docs/reference/golden-values.json 不一致，说明两端行为契约已分叉，必须人工对齐。"
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 单元测试（含原网页逐位比对）
+        run: npm test
+
+      - name: 构建
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,682 @@
+/*
+ * 设计 token —— 全工程唯一允许出现颜色字面量的文件。
+ * 数值与安卓版 ui/theme/Color.kt、Type.kt 一一对应，改动必须两边同步。
+ */
+
+:root {
+  /* ---- 浅色（对应 FinanceColors.Light）---- */
+  --primary: #415fff;
+  --on-primary: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --outline: rgba(15, 23, 42, 0.059);
+  --gain: #059669;
+  --loss: #dc2626;
+  --highlight-bg: rgba(65, 95, 255, 0.078);
+
+  /* ---- 形状与间距（对应 Spacing）---- */
+  --card-gap: 16px;
+  --card-padding: 20px;
+  --card-radius: 24px;
+  --row-h: 56px;
+  --btn-h: 52px;
+
+  /* ---- 字号（对应 AppTypography / PrimaryResultStyle / InputValueStyle）---- */
+  --fs-headline: 28px;
+  --lh-headline: 36px;
+  --fs-title: 17px;
+  --lh-title: 24px;
+  --fs-body: 13px;
+  --lh-body: 20px;
+  --fs-small: 12px;
+  --lh-small: 18px;
+  --fs-label: 16px;
+  --fs-result: 40px;
+  --lh-result: 46px;
+  --fs-input: 22px;
+  --lh-input: 28px;
+
+  /* ---- 字体 ----
+   * 安卓上用 vivo Sans；Web 上只能用各平台系统字体，字形必然不同，
+   * 但字号/行高/字重可以对齐。
+   * 金额与净值一律等宽，保证上下行小数点对齐。 */
+  --font-ui: system-ui, -apple-system, 'PingFang SC', 'Noto Sans CJK SC',
+    'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Roboto Mono', monospace;
+}
+
+/* 深色（对应 FinanceColors.Dark）。
+ * 由 <html data-theme="dark"> 显式指定，或跟随系统且未显式指定时生效。 */
+:root[data-theme='dark'] {
+  --primary: #7b90ff;
+  --on-primary: #0b0f1a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --bg: #0b0f1a;
+  --surface: #151a26;
+  --outline: rgba(255, 255, 255, 0.078);
+  --gain: #34d399;
+  --loss: #f87171;
+  --highlight-bg: rgba(65, 95, 255, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --primary: #7b90ff;
+    --on-primary: #0b0f1a;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --bg: #0b0f1a;
+    --surface: #151a26;
+    --outline: rgba(255, 255, 255, 0.078);
+    --gain: #34d399;
+    --loss: #f87171;
+    --highlight-bg: rgba(65, 95, 255, 0.18);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* 移动端点击高亮会盖住设计色，关掉 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  /* 禁止下拉刷新/橡皮筋把整页拽走，但不阻止内部滚动 */
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 版式 ---------- */
+.h1 {
+  font-size: var(--fs-headline);
+  line-height: var(--lh-headline);
+  font-weight: 700;
+}
+.subtitle {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+.card-title {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: 500;
+}
+.small {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-secondary);
+}
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.tone-gain {
+  color: var(--gain);
+}
+.tone-loss {
+  color: var(--loss);
+}
+.tone-neutral {
+  color: var(--text-primary);
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+}
+.stack > * + * {
+  margin-top: var(--card-gap);
+}
+
+/* ---------- 页面骨架 ---------- */
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.page-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-bottom: var(--card-gap);
+}
+/* 底部导航占位：安全区 + 导航高度 */
+.page-body.has-nav {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* ---------- 顶栏 ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar .grow {
+  flex: 1;
+  min-width: 0;
+}
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.icon-btn:active {
+  background: var(--highlight-bg);
+}
+.text-btn {
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font-size: var(--fs-body);
+  font-family: inherit;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  min-height: 44px;
+}
+.text-btn:active {
+  background: var(--highlight-bg);
+}
+.text-btn.danger {
+  color: var(--loss);
+}
+.text-btn:disabled {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+/* ---------- 分段控件 ---------- */
+.segmented {
+  display: flex;
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 4px;
+}
+.segmented button {
+  flex: 1;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+.segmented button[aria-selected='true'] {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 500;
+}
+
+/* ---------- 输入行 ---------- */
+.field {
+  width: 100%;
+}
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--row-h);
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative; /* 承载覆盖其上的原生 date input */
+  color: inherit;
+}
+.field-row:disabled {
+  cursor: default;
+}
+.field-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--text-secondary);
+}
+.field-label {
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+}
+.field-spacer {
+  flex: 1;
+}
+.field-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-input);
+  line-height: var(--lh-input);
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+.field-value.is-muted {
+  color: var(--text-secondary);
+}
+.field-value.is-error {
+  color: var(--loss);
+}
+.field-unit {
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+}
+.field-divider {
+  height: 1px;
+  background: var(--outline);
+}
+.field-divider.is-active {
+  height: 2px;
+  background: var(--primary);
+}
+.field-msg {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+.field-msg.is-error {
+  color: var(--loss);
+}
+/* 覆盖在整行上的原生日期输入：视觉隐藏但接收真实触摸 */
+.field-date {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 16px; /* 防 iOS 聚焦时自动放大 */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ---------- 结果卡 ---------- */
+.result-label {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.result-primary {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-result);
+  line-height: var(--lh-result);
+  font-weight: 700;
+  text-align: center;
+  display: block;
+  margin-top: 8px;
+}
+.result-card.is-stale {
+  opacity: 0.45;
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-top: 16px;
+}
+.result-grid .metric-label {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-secondary);
+}
+.result-grid .metric-value {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: 500;
+}
+.divider {
+  height: 1px;
+  background: var(--outline);
+  margin: 16px 0;
+}
+.result-note {
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+.result-note.is-error {
+  color: var(--loss);
+}
+
+/* ---------- 计算过程 ---------- */
+.process-head {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  color: inherit;
+  min-height: 44px;
+}
+.process-head .chev {
+  margin-left: auto;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+.process-head[aria-expanded='true'] .chev {
+  transform: rotate(180deg);
+}
+.process-steps {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+}
+.process-steps.is-open {
+  max-height: 400px;
+}
+.process-steps p {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+  padding: 3px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .process-steps,
+  .process-head .chev {
+    transition: none;
+  }
+}
+
+/* ---------- 按钮 ---------- */
+.btn-row {
+  display: flex;
+  gap: 12px;
+}
+.btn {
+  flex: 1;
+  height: var(--btn-h);
+  border-radius: 26px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: var(--fs-label);
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- 数字键盘 ---------- */
+.keypad {
+  background: var(--surface);
+  padding: 8px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+}
+.keypad-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.keypad button {
+  height: 52px;
+  margin: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  cursor: pointer;
+}
+.keypad button:active {
+  filter: brightness(0.94);
+}
+.keypad button.done {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+/* ---------- 底部导航 ---------- */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--outline);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 5;
+}
+.bottom-nav button {
+  flex: 1;
+  height: 56px;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+}
+.bottom-nav button[aria-current='page'] {
+  color: var(--primary);
+}
+
+/* ---------- 记录列表 ---------- */
+.group-label {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  padding: 4px 0 8px;
+}
+.record {
+  position: relative;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+.record-delete {
+  position: absolute;
+  inset: 0;
+  background: var(--loss);
+  color: var(--on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 28px;
+  border: 0;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+.record-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 88px;
+  padding: 0 16px;
+  background: var(--surface);
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  touch-action: pan-y;
+  will-change: transform;
+}
+.record.is-selected .record-face {
+  background: var(--highlight-bg);
+}
+.record-bar {
+  width: 4px;
+  height: 44px;
+  border-radius: 2px;
+  flex: none;
+}
+.record-main {
+  flex: 1;
+  min-width: 0;
+}
+.record-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.record-title {
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+.record-sub,
+.record-note {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-note {
+  color: var(--primary);
+}
+.record-annual {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-title);
+  font-weight: 500;
+  flex: none;
+}
+.empty {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--text-secondary);
+}
+
+/* ---------- 对比卡 ---------- */
+.compare-row {
+  padding: 6px 0;
+}
+.compare-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.compare-cols .win {
+  color: var(--gain);
+}
+
+/* ---------- 弹窗 ---------- */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 20;
+}
+.dialog {
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+}
+.dialog h3 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.dialog input[type='text'] {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 16px;
+  padding: 0 12px;
+}
+
+/* ---------- 设置页 ---------- */
+.settings-row {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  text-align: left;
+}
+.settings-row .check {
+  margin-left: auto;
+  color: var(--primary);
+}
+
+/* ---------- 提示条 ---------- */
+.snackbar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  background: var(--text-primary);
+  color: var(--bg);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: var(--fs-body);
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.snackbar.is-shown {
+  opacity: 1;
+}

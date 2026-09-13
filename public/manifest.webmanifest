@@ -1,0 +1,41 @@
+{
+  "name": "收益计算器",
+  "short_name": "收益计算器",
+  "description": "理财年化收益计算器：金额法与净值法，本地计算，零网络请求。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/financial-return-calculator/",
+  "scope": "/financial-return-calculator/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fb",
+  "theme_color": "#415fff",
+  "categories": ["finance", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/financial-return-calculator/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/financial-return-calculator/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/financial-return-calculator/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "打开记录",
+      "short_name": "记录",
+      "url": "/financial-return-calculator/#/records"
+    }
+  ]
+}

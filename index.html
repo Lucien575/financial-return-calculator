@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover 才能让 env(safe-area-inset-*) 生效（iPhone 刘海/手势条） -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>收益计算器</title>
+    <meta name="description" content="理财年化收益计算器：金额法与净值法，本地计算，零网络请求。" />
+
+    <!-- iOS 全屏与状态栏 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="收益计算器" />
+
+    <!-- 主题色：跟随浅/深色 -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f7fb" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0f1a" />
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <!-- iOS 不读 manifest 里的图标，必须单独给 apple-touch-icon -->
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
+    <style>
+      /* 首屏防白闪：在 CSS 加载前先把背景铺上 */
+      html,
+      body {
+        margin: 0;
+        background: #f5f7fb;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #0b0f1a;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

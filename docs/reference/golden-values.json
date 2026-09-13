@@ -1,0 +1,160 @@
+{
+  "source": "原版网页计算器（元宝分享页）的真实运行输出，非手算",
+  "capturedBy": "无头 Chrome 调用原版 calculateMethod1/calculateMethod2 后读取 DOM",
+  "capturedAt": "2026-09-12",
+  "note": "安卓版与原版共用这份 fixture；PWA 也必须逐格一致。改动它等于改行为契约。",
+  "amount": [
+    {
+      "buy": "40125.71",
+      "earn": "429.60",
+      "days": "191",
+      "currentTotal": "40,555.31 元",
+      "returnRate": "+1.07%",
+      "annual": "+2.05%",
+      "compound": "+2.06%",
+      "daysText": "191 天"
+    },
+    {
+      "buy": "20000",
+      "earn": "429.60",
+      "days": "191",
+      "currentTotal": "20,429.60 元",
+      "returnRate": "+2.15%",
+      "annual": "+4.10%",
+      "compound": "+4.14%",
+      "daysText": "191 天"
+    },
+    {
+      "buy": "10000",
+      "earn": "-500",
+      "days": "365",
+      "currentTotal": "9,500.00 元",
+      "returnRate": "-5.00%",
+      "annual": "-5.00%",
+      "compound": "-5.00%",
+      "daysText": "365 天"
+    },
+    {
+      "buy": "10000",
+      "earn": "100",
+      "days": "1",
+      "currentTotal": "10,100.00 元",
+      "returnRate": "+1.00%",
+      "annual": "+365.00%",
+      "compound": "+3678.34%",
+      "daysText": "1 天"
+    },
+    {
+      "buy": "10000",
+      "earn": "5000",
+      "days": "3650",
+      "currentTotal": "15,000.00 元",
+      "returnRate": "+50.00%",
+      "annual": "+5.00%",
+      "compound": "+4.14%",
+      "daysText": "3650 天"
+    },
+    {
+      "buy": "1234567.89",
+      "earn": "12345.67",
+      "days": "90",
+      "currentTotal": "1,246,913.56 元",
+      "returnRate": "+1.00%",
+      "annual": "+4.06%",
+      "compound": "+4.12%",
+      "daysText": "90 天"
+    },
+    {
+      "buy": "0.01",
+      "earn": "0.01",
+      "days": "7",
+      "currentTotal": "0.02 元",
+      "returnRate": "+100.00%",
+      "annual": "+5214.29%",
+      "compound": "+497237712236506304.00%",
+      "daysText": "7 天"
+    },
+    {
+      "buy": "999999.99",
+      "earn": "-12345.67",
+      "days": "1000",
+      "currentTotal": "987,654.32 元",
+      "returnRate": "-1.23%",
+      "annual": "-0.45%",
+      "compound": "-0.45%",
+      "daysText": "1000 天"
+    },
+    {
+      "buy": "50000",
+      "earn": "0",
+      "days": "365",
+      "currentTotal": "50,000.00 元",
+      "returnRate": "+0.00%",
+      "annual": "+0.00%",
+      "compound": "+0.00%",
+      "daysText": "365 天"
+    }
+  ],
+  "nav": [
+    {
+      "buyNav": "1.046",
+      "currentNav": "1.0573",
+      "days": "191",
+      "buyNavText": "1.04600000",
+      "currentNavText": "1.05730000",
+      "returnRate": "+1.08%",
+      "annual": "+2.07%",
+      "daysText": "191 天"
+    },
+    {
+      "buyNav": "1.00000001",
+      "currentNav": "1.00000003",
+      "days": "365",
+      "buyNavText": "1.00000001",
+      "currentNavText": "1.00000003",
+      "returnRate": "+0.00%",
+      "annual": "+0.00%",
+      "daysText": "365 天"
+    },
+    {
+      "buyNav": "1.5",
+      "currentNav": "1.35",
+      "days": "100",
+      "buyNavText": "1.50000000",
+      "currentNavText": "1.35000000",
+      "returnRate": "-10.00%",
+      "annual": "-31.93%",
+      "daysText": "100 天"
+    },
+    {
+      "buyNav": "1.046",
+      "currentNav": "1.046",
+      "days": "191",
+      "buyNavText": "1.04600000",
+      "currentNavText": "1.04600000",
+      "returnRate": "+0.00%",
+      "annual": "+0.00%",
+      "daysText": "191 天"
+    },
+    {
+      "buyNav": "2.34567891",
+      "currentNav": "3.45678912",
+      "days": "500",
+      "buyNavText": "2.34567891",
+      "currentNavText": "3.45678912",
+      "returnRate": "+47.37%",
+      "annual": "+32.72%",
+      "daysText": "500 天"
+    },
+    {
+      "buyNav": "1.046",
+      "currentNav": "1.0573",
+      "days": "1",
+      "buyNavText": "1.04600000",
+      "currentNavText": "1.05730000",
+      "returnRate": "+1.08%",
+      "annual": "+4949.98%",
+      "daysText": "1 天"
+    }
+  ]
+}

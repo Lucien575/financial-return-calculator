@@ -1,0 +1,24 @@
+{
+  "name": "financial-return-calculator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "收益计算器 PWA —— 年化收益计算，安卓/iOS/桌面通用，零网络请求",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  },
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  }
+}
