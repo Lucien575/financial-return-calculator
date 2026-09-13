@@ -37,10 +37,20 @@ describe('KeypadReducer', () => {
     expect(applyKey('abc', '+1000', 2)).toBe('1000.00');
   });
 
-  it('x2 快捷键', () => {
-    expect(applyKey('10000', 'x2', 2)).toBe('20000.00');
-    expect(applyKey('', 'x2', 2)).toBe('0.00');
-    expect(applyKey('1.046', 'x2', 8)).toBe('2.09');
+  it('± 取反 —— 没有它用户就填不了亏损', () => {
+    expect(applyKey('500', '±', 2)).toBe('-500');
+    expect(applyKey('-500', '±', 2)).toBe('500');
+    expect(applyKey('', '±', 2)).toBe(''); // 空值不产生孤立负号
+    expect(applyKey('0.5', '±', 8)).toBe('-0.5');
+  });
+
+  it('取反后的值仍可继续编辑，且校验能正确识别', () => {
+    let v = applyKey('429.60', '±', 2);
+    expect(v).toBe('-429.60');
+    v = applyKey(v, 'DEL', 2);
+    expect(v).toBe('-429.6');
+    v = applyKey(v, '±', 2);
+    expect(v).toBe('429.6');
   });
 
   it('完成不改值', () => {
@@ -55,6 +65,7 @@ describe('KeypadReducer', () => {
   it('键盘布局是 4×4 共 16 键', () => {
     expect(NUMBER_KEYS).toHaveLength(16);
     expect(NUMBER_KEYS).toContain('DONE');
+    expect(NUMBER_KEYS).toContain('±');
     expect(NUMBER_KEYS).toContain('DEL');
   });
 });
