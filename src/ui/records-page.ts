@@ -63,8 +63,13 @@ export function createRecordsPage(deps: RecordsPageDeps) {
     await refresh();
   });
 
-  /** 左滑露出删除。手势用 Pointer Events，触摸与鼠标都能用。 */
-  function attachSwipe(face: HTMLElement, id: number): void {
+  /**
+   * 左滑露出删除。手势用 Pointer Events，触摸与鼠标都能用。
+   *
+   * onMoved 回调很关键：按下和抬起落在同一元素上时浏览器仍会补发 click，
+   * 不区分的话「左滑看完删除按钮」会顺手弹出备注窗（真机上同样会撞到）。
+   */
+  function attachSwipe(face: HTMLElement, id: number, onMoved: (moved: boolean) => void): void {
     let startX = 0;
     let dx = 0;
     let dragging = false;
@@ -81,13 +86,20 @@ export function createRecordsPage(deps: RecordsPageDeps) {
       dx = Math.min(0, Math.max(-REVEAL, e.clientX - startX));
       // 只在明显横向拖动时接管，避免影响纵向滚动
       if (Math.abs(dx) > 8) {
-        face.setPointerCapture?.(e.pointerId);
+        // 合成事件的 pointerId 可能不存在，setPointerCapture 会抛异常并打断本次处理
+        try {
+          face.setPointerCapture?.(e.pointerId);
+        } catch {
+          /* 拿不到捕获也不影响：transform 已经在跟手了 */
+        }
         face.style.transform = `translateX(${dx}px)`;
       }
     });
     const finish = () => {
       if (!dragging) return;
       dragging = false;
+      const moved = Math.abs(dx) > 8;
+      onMoved(moved);
       face.style.transition = 'transform 0.15s ease';
       const open = dx < -REVEAL / 2;
       face.style.transform = `translateX(${open ? -REVEAL : 0}px)`;
@@ -154,8 +166,15 @@ export function createRecordsPage(deps: RecordsPageDeps) {
       h('span', { class: `record-annual ${toneColorClass(s.tone)}` }, s.primaryAnnual),
     );
 
+    let dragged = false;
+
     face.addEventListener('click', async () => {
       if (longPressed) return; // 长按刚触发过，别再当成点击
+      if (dragged) {
+        // 刚才是左滑，不是点击：只把标志清掉
+        dragged = false;
+        return;
+      }
       closeAllSwipes();
       if (selected.size > 0) {
         selected = toggleSelection(selected, s.id);
@@ -169,7 +188,9 @@ export function createRecordsPage(deps: RecordsPageDeps) {
       }
     });
 
-    attachSwipe(face, s.id);
+    attachSwipe(face, s.id, (moved) => {
+      dragged = moved;
+    });
     attachLongPress(face, s.id);
 
     const wrap = h('div', { class: `record${selected.has(s.id) ? ' is-selected' : ''}` }, del, face);

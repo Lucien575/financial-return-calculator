@@ -114,7 +114,9 @@ export function createApp(mount: HTMLElement) {
 
     const page =
       route === 'records' ? recordsPage.el : route === 'settings' ? settingsPage.el : calculatorPage.el;
-    mount.replaceChildren(page);
+    // 只替换中间那层，底部导航常驻在 shell 里 —— 之前用 replaceChildren 清空 mount
+    // 会把导航一起删掉（Playwright 抓到的 bug）
+    pageHost.replaceChildren(page);
 
     bottomNav.style.display = route === 'settings' ? 'none' : '';
     navCalc.setAttribute('aria-current', route === 'calculator' ? 'page' : 'false');
@@ -124,7 +126,9 @@ export function createApp(mount: HTMLElement) {
     if (route === 'settings') settingsPage.onEnter();
   }
 
-  mount.append(bottomNav);
+  const pageHost = h('div', { class: 'page-host' });
+  mount.append(h('div', { class: 'app-shell' }, pageHost, bottomNav));
+
   window.addEventListener('hashchange', () => render(parseRoute()));
   render(parseRoute());
 

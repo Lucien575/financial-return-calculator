@@ -94,7 +94,11 @@ export function createCalculatorPage(store: CalculatorStore, deps: CalculatorPag
 
   // ---------- 结果卡 ----------
   const resultPrimary = h('span', { class: 'result-primary' });
-  const resultEmptyHint = h('p', { class: 'small', style: 'margin-top:8px' }, '填入下方金额后自动计算');
+  const resultEmptyHint = h(
+    'p',
+    { class: 'small result-empty-hint', style: 'margin-top:8px' },
+    '填入下方金额后自动计算',
+  );
   const resultDivider = h('div', { class: 'divider' });
   const resultGrid = h('div', { class: 'result-grid' });
   const resultNote = h('p', { class: 'result-note' });
