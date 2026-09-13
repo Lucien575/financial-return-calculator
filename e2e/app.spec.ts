@@ -269,16 +269,17 @@ test('PWA 基础：manifest 可解析、SW 已注册、无控制台报错', asyn
 test('离线前置条件：SW 已接管，且 shell 与构建产物都进了缓存', async ({ page }) => {
   await page.goto('./');
 
+  // 公网部署下 SW 注册比本地慢（实测冷启动可达 6 秒），余量给足
   await page.waitForFunction(
     () => navigator.serviceWorker.getRegistrations().then((r) => r.length > 0),
     null,
-    { timeout: 20_000 },
+    { timeout: 40_000 },
   );
   if (!(await page.evaluate(() => navigator.serviceWorker.controller !== null))) {
     await page.reload();
   }
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, {
-    timeout: 20_000,
+    timeout: 40_000,
   });
 
   const cached = await page.evaluate(async () => {
