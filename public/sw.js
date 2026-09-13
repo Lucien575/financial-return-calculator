@@ -8,19 +8,12 @@
  * 由页面提示用户「有新版本」后 skipWaiting 生效 —— 不静默刷新，避免打断正在输入的人。
  */
 
-const VERSION = 'v2';
+// 下面两行由构建期注入（见 vite.config.ts 的 injectSwManifest 插件）。
+// 构建产物是按内容哈希命名的，SW 作为静态文件在编写时拿不到这些名字，
+// 只能等构建完成后再写进去 —— 否则首次安装后立刻断网会白屏（E2E 抓到的竞态）。
+const VERSION = '__BUILD_ID__';
 const CACHE = `frc-${VERSION}`;
-
-// 相对路径：SW 部署在 /financial-return-calculator/ 下，用相对路径避免子路径写死
-const PRECACHE = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png',
-];
+const PRECACHE = '__PRECACHE__';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -60,16 +53,19 @@ self.addEventListener('fetch', (event) => {
   // 而缓存里的旧 index.html 仍然引用着它们 —— 用户会加载到一个坏页面。
   // （这个坑是本地反复重构建时被 E2E 撞出来的。）
   if (req.mode === 'navigate') {
+    const fromCache = () =>
+      caches.match('./index.html').then((hit) => hit ?? Response.error());
     event.respondWith(
       fetch(req)
         .then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put('./index.html', copy));
-          }
+          // 离线时 fetch 有时不抛异常、而是返回一个非 ok 的响应，
+          // 只处理 reject 的话会把错误页直接交给浏览器（E2E 抓到的间歇性白屏）
+          if (!res || !res.ok) return fromCache();
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put('./index.html', copy));
           return res;
         })
-        .catch(() => caches.match('./index.html').then((hit) => hit ?? Response.error())),
+        .catch(fromCache),
     );
     return;
   }

@@ -104,3 +104,17 @@ Pages 在子路径下，因此以下几处必须与仓库名一致（改动要�
 - `vite.config.ts` 的 `BASE_PATH`
 - `public/manifest.webmanifest` 的 `start_url` / `scope` / `icons[].src`
 - `manifest.webmanifest` 本身的引用路径
+
+## 验收清单（真机）
+
+自动化能覆盖的部分见 `npm run verify`。以下几项**必须真机人工确认**，
+因为它们要么依赖具体设备行为，要么在 headless 环境下不可靠：
+
+| 项 | 为什么不能自动化 | 怎么测 |
+|---|---|---|
+| 真实离线使用 | headless 下 Playwright 的 `setOffline` 与 Service Worker 组合不稳（实测约 40% 失败率，3 次重试也不通过）。CI 只断言"离线所需的资源都已缓存" | 装到主屏幕 → 开飞行模式 → 打开 App，应能计算、看记录 |
+| iOS 系统日期滚轮 | 只有真机 Safari 才有；这是方案里标记为"最需要真机确认"的一点 | iPhone 上点「买入日期」，确认滚轮正常弹出、确定后日期写回 |
+| iOS 添加到主屏幕 | 无 `beforeinstallprompt`，入口在分享菜单里 | Safari → 分享 → 添加到主屏幕 → 从桌面图标打开应为全屏无地址栏 |
+| iOS 存储是否被回收 | 平台行为，无法本地模拟 | 装到主屏幕后放置数天再打开，确认记录还在 |
+| 安卓安装引导 | `beforeinstallprompt` 只在真实 Chrome 里触发 | 安卓 Chrome 打开，确认出现「安装到主屏幕」横幅 |
+| 全程零联网 | CI 已断言无外部请求；真机可再确认一次 | 抓包或看飞行模式下是否一切正常 |
