@@ -238,9 +238,101 @@ test('PWA 基础：manifest 可解析、SW 已注册、无控制台报错', asyn
   expect(manifest.start_url).toBe('/financial-return-calculator/');
   expect(manifest.scope).toBe('/financial-return-calculator/');
 
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null || true);
-  const hasSw = await page.evaluate(() => navigator.serviceWorker.getRegistrations().then((r) => r.length));
-  expect(hasSw).toBeGreaterThanOrEqual(0); // 首次访问可能还没接管，不强制
+  await page.waitForFunction(
+    () => navigator.serviceWorker.getRegistrations().then((r) => r.length > 0),
+    null,
+    { timeout: 20_000 },
+  );
+  const scopes = await page.evaluate(() =>
+    navigator.serviceWorker.getRegistrations().then((r) => r.map((x) => x.scope)),
+  );
+  expect(scopes).toEqual(['http://localhost:4173/financial-return-calculator/']);
 
   expect(errors).toEqual([]);
+});
+
+test('离线可用：断网后仍能打开、计算、看记录', async ({ page, context }) => {
+  await page.goto('./');
+
+  // 等 SW 注册完成
+  await page.waitForFunction(
+    () => navigator.serviceWorker.getRegistrations().then((r) => r.length > 0),
+    null,
+    { timeout: 20_000 },
+  );
+  // 首次加载的文档在 SW 注册之前就完成了，controller 仍是 null，需要重载一次才被接管
+  if (!(await page.evaluate(() => navigator.serviceWorker.controller !== null))) {
+    await page.reload();
+  }
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, {
+    timeout: 20_000,
+  });
+
+  // 等预缓存真的写进去了，否则断网就白屏
+  await page.waitForFunction(
+    async () => {
+      const keys = await caches.keys();
+      if (keys.length === 0) return false;
+      const cache = await caches.open(keys[0]);
+      const reqs = await cache.keys();
+      return reqs.length >= 3;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+
+  // 先存一条记录，断网后要还能看到
+  await focusRow(page, '买入金额');
+  await typeNumber(page, '10000');
+  await focusRow(page, '持有收益');
+  await typeNumber(page, '500');
+  await focusRow(page, '持有天数');
+  await typeNumber(page, '365');
+  await page.getByRole('button', { name: '保存到记录' }).click();
+  await expect(page.locator('.snackbar')).toContainText('已保存');
+
+  // 断网
+  await context.setOffline(true);
+  await page.reload();
+
+  // 页面照常打开
+  await expect(page.locator('h1')).toHaveText('年化收益计算器');
+
+  // 断网也能算
+  await focusRow(page, '买入金额');
+  await typeNumber(page, '20000');
+  await focusRow(page, '持有收益');
+  await typeNumber(page, '500');
+  await focusRow(page, '持有天数');
+  await typeNumber(page, '365');
+  await expect(page.locator('.result-primary')).toHaveText('+2.50%');
+
+  // 断网也能看记录
+  await navTo(page, '记录');
+  await expect(page.locator('.record')).toHaveCount(1);
+
+  await context.setOffline(false);
+});
+
+test('不发任何网络请求（零联网承诺）', async ({ page }) => {
+  const external: string[] = [];
+  const failed: string[] = [];
+  page.on('request', (r) => {
+    const url = new URL(r.url());
+    if (url.origin !== 'http://localhost:4173') external.push(r.url());
+  });
+  page.on('requestfailed', (r) => failed.push(r.url()));
+
+  await page.goto('./');
+  await focusRow(page, '买入金额');
+  await typeNumber(page, '40125.71');
+  await focusRow(page, '持有收益');
+  await typeNumber(page, '429.60');
+  await focusRow(page, '持有天数');
+  await typeNumber(page, '191');
+  await page.getByRole('button', { name: '保存到记录' }).click();
+  await page.waitForTimeout(500);
+
+  expect(external, `出现了外部请求: ${external.join(', ')}`).toEqual([]);
+  expect(failed, `有请求失败: ${failed.join(', ')}`).toEqual([]);
 });

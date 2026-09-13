@@ -43,6 +43,12 @@ npm run build    # 产物在 dist/
 **改动计算逻辑时，两端必须同步并保持这份 fixture 不变**；否则 CI 会红。
 这是「安卓和 iPhone 算出来一模一样」的唯一可验证保障。
 
+CI 通过 `docs/reference/golden-values.sha256` 强制校验；改动 fixture 必须显式更新该文件。
+
+> 说明：安卓侧的测试读的是 `original-web-golden-values.tsv`（同源、同一次抓取），
+> 本侧读 JSON。两者由同一个脚本从 TSV 规范化而来，字节内容已用哈希锁定。
+> 安卓项目按约定不做任何代码改动，因此那边没有对应的自动校验。
+
 ### 移植时对齐的精度语义
 
 安卓版内核不是纯 double：金额/净值用 `BigDecimal`（除法 scale=16、HALF_UP），幂运算用 `Math.pow`。

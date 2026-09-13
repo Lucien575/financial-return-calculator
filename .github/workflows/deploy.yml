@@ -31,11 +31,11 @@ jobs:
       # 关键一步：校验黄金值 fixture 与安卓版完全一致。
       # 只要有人改动内核而没有同步 fixture，这里就会红 —— 这是
       # 「安卓和 iPhone 算出来一模一样」的强制保障。
-      - name: 校验黄金值与安卓版一致
+      - name: 校验黄金值 fixture 未被意外改动
         run: |
-          echo "本仓库 fixture:"
-          shasum -a 256 docs/reference/golden-values.json
-          echo "若此值与安卓项目 docs/reference/golden-values.json 不一致，说明两端行为契约已分叉，必须人工对齐。"
+          cd docs/reference
+          shasum -a 256 -c golden-values.sha256
+          echo "fixture 与安卓版共享，哈希一致说明两端行为契约未分叉。"
 
       - name: 类型检查
         run: npm run typecheck

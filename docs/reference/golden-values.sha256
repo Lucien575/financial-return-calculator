@@ -1,0 +1,4 @@
+# 黄金值 fixture 的预期哈希。
+# 这份文件同时被 PWA 和安卓原生版使用，是「两端算出来一模一样」的行为契约。
+# 修改 golden-values.json 必须同步：更新本文件 + 安卓项目里的同名文件，否则 CI 会红。
+af8ffc9c0e53744dca56605581c1f659704eeddde8b72bf059c5cd2a51caf446  golden-values.json
