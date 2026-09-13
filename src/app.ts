@@ -46,7 +46,13 @@ export function createApp(mount: HTMLElement) {
 
   const calculatorPage = createCalculatorPage(store, {
     onSave: async (input, result) => {
-      await addRecord(toRecordRow(input, result, null, Date.now()));
+      try {
+        await addRecord(toRecordRow(input, result, null, Date.now()));
+      } catch {
+        // 存储不可用时必须明确告诉用户，不能让他以为保存成功了
+        showSnackbar('保存失败：存储不可用');
+        return;
+      }
       haptic();
       showSnackbar('已保存到记录');
     },
@@ -61,11 +67,20 @@ export function createApp(mount: HTMLElement) {
     onOpenSettings: () => navigate('settings'),
   });
 
+  /** 包一层：存储类操作失败时给出提示，而不是抛出未处理的 Promise 异常 */
+  const guard = <T>(fn: () => Promise<T>, failMessage: string) => async (): Promise<T | void> => {
+    try {
+      return await fn();
+    } catch {
+      showSnackbar(failMessage);
+    }
+  };
+
   const recordsPage = createRecordsPage({
     list: listSummaries,
-    remove: deleteRecord,
-    setNote,
-    clearAll: clearRecords,
+    remove: (id) => guard(() => deleteRecord(id), '删除失败：存储不可用')(),
+    setNote: (id, note) => guard(() => setNote(id, note), '备注保存失败')(),
+    clearAll: () => guard(() => clearRecords(), '清空失败：存储不可用')(),
     onOpenSettings: () => navigate('settings'),
   });
 
@@ -77,7 +92,12 @@ export function createApp(mount: HTMLElement) {
       applyTheme(mode);
     },
     clearRecords: async () => {
-      await clearRecords();
+      try {
+        await clearRecords();
+      } catch {
+        showSnackbar('清空失败：存储不可用');
+        return;
+      }
       showSnackbar('已清空所有记录');
     },
     onBack: () => navigate('calculator'),

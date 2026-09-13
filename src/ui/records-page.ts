@@ -260,6 +260,18 @@ export function createRecordsPage(deps: RecordsPageDeps) {
     clearBtn.style.display = summaries.length === 0 ? 'none' : '';
 
     clear(listEl);
+    if (loadError) {
+      listEl.append(
+        h(
+          'div',
+          { class: 'empty' },
+          h('p', { class: 'h1' }, '⚠️'),
+          h('p', {}, loadError),
+        ),
+      );
+      renderCompare();
+      return;
+    }
     if (summaries.length === 0) {
       listEl.append(
         h(
@@ -285,8 +297,18 @@ export function createRecordsPage(deps: RecordsPageDeps) {
     renderCompare();
   }
 
+  let loadError: string | null = null;
+
   async function refresh(): Promise<void> {
-    summaries = await deps.list();
+    try {
+      summaries = await deps.list();
+      loadError = null;
+    } catch {
+      // 存储不可用（无痕模式、配额耗尽、用户禁用存储）时不能静默显示"暂无记录"，
+      // 那会让用户以为自己的记录丢了
+      summaries = [];
+      loadError = '读取记录失败：这台设备上的存储暂时不可用';
+    }
     render();
   }
 
