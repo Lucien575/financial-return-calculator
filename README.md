@@ -319,6 +319,63 @@ Pages 必须由**仓库管理员**先开启一次，两种方式：
 | Chrome 系统安装对话框弹出，名称与图标正确 | ✅ 显示「收益计算器」+ 蓝色计算器图标 + `lucien575.github.io` |
 | 真实离线可用 | ✅ 杀掉服务器 + 飞行模式后页面仍完整加载 |
 
+**根因已定位（第 15 轮补充）：**
+
+点击系统对话框的「安装」后系统不生成 WebAPK，**原因是设备所在网络访问不了 Google 服务**：
+
+```
+ping www.google.com        → 100% packet loss
+ping googleusercontent.com → 100% packet loss   ← WebAPK 签发服务器
+ping play.google.com       → 100% packet loss
+```
+
+用设备浏览器打开 `google.com` 也是白屏。该设备是国内版 vivo + 国内运营商网络
+（APN `3gnet`、DNS `114.114.114.114`）。
+
+**机制**：Chrome 的「安装」分两步 —— 浏览器本地判定可安装性（这步通过了，所以对话框正常弹出），
+然后向 **Google 的 WebAPK 签发服务器**请求生成并签名 APK，再由设备下载安装。
+第二步依赖 Google 服务，网络不通就静默失败。
+
+所以这是**网络环境限制，不是应用缺陷**。在能访问 Google 服务的网络下（或挂代理）重试即可完成安装。
+
+> 补充：iOS 不走这条链路。iPhone 的「添加到主屏幕」完全在本地完成
+> （读 `apple-touch-icon` + `apple-mobile-web-app-capable`），
+> **不受 Google 服务不可达的影响**。
+
+## 可安装性审计（针对线上部署实测）
+
+对着 https://lucien575.github.io/financial-return-calculator/ 逐项核对 Chrome 的安装判定要件：
+
+| 要件 | 结果 |
+|---|---|
+| manifest 可访问、Content-Type 正确 | ✅ |
+| name / short_name / display=standalone | ✅ |
+| start_url 与 scope 一致且为 `/financial-return-calculator/` | ✅ |
+| background_color / theme_color | ✅ |
+| 192×192 图标（实际尺寸核对） | ✅ |
+| 512×512 图标（WebAPK 必需，实际尺寸核对） | ✅ |
+| maskable 图标 | ✅ |
+| sw.js 可取且含 `fetch` 事件监听 | ✅ |
+| SW 状态 = activated 且已接管页面 | ✅ |
+
+**关于 `beforeinstallprompt`**：桌面版 Chrome 对该事件设有**用户参与度门槛**，自动化环境下不会累积到阈值，
+所以脚本里测不到 —— 这是桌面端的预期行为，不是缺陷。安卓端不设这个门槛，
+这也是为什么在 vivo X200s 上打开时安装横幅会立刻出现。
+
+## 安卓真机验收记录（第二部分：安装）
+
+设备：vivo X200s（V2458A）/ Android 16 / OriginOS。
+
+**已验证通过的：**
+
+| 项 | 证据 |
+|---|---|
+| 线上地址在真机 Chrome 正常渲染 | ✅ 截图确认 |
+| **Chrome 判定为可安装** | ✅ Chrome 菜单出现「安装并创建快捷方式」，其下有「安装」与「创建快捷方式」两个选项 |
+| 应用内安装横幅出现 | ✅ |
+| Chrome 系统安装对话框弹出，名称与图标正确 | ✅ 显示「收益计算器」+ 蓝色计算器图标 + `lucien575.github.io` |
+| 真实离线可用 | ✅ 杀掉服务器 + 飞行模式后页面仍完整加载 |
+
 **未完成的：**
 
 点击系统对话框的「安装」后，**系统没有生成 WebAPK**（`pm list packages | grep webapk` 为空，
