@@ -8,7 +8,7 @@
  * 由页面提示用户「有新版本」后 skipWaiting 生效 —— 不静默刷新，避免打断正在输入的人。
  */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `frc-${VERSION}`;
 
 // 相对路径：SW 部署在 /financial-return-calculator/ 下，用相对路径避免子路径写死
@@ -54,10 +54,22 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // 导航请求：优先用缓存的 index.html，保证离线也能进 App
+  // 导航请求：**network-first**，离线才回退缓存。
+  //
+  // 不能写成 cache-first：构建产物是按内容哈希命名的，重新部署后旧哈希文件会被删掉，
+  // 而缓存里的旧 index.html 仍然引用着它们 —— 用户会加载到一个坏页面。
+  // （这个坑是本地反复重构建时被 E2E 撞出来的。）
   if (req.mode === 'navigate') {
     event.respondWith(
-      caches.match('./index.html').then((hit) => hit ?? fetch(req)),
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put('./index.html', copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match('./index.html').then((hit) => hit ?? Response.error())),
     );
     return;
   }
