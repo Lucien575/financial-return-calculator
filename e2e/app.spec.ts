@@ -191,6 +191,11 @@ test('记录：备注、并排对比、左滑删除', async ({ page }) => {
   await faces.nth(0).dispatchEvent('pointerdown');
   await page.waitForTimeout(650);
   await faces.nth(0).dispatchEvent('pointerup');
+
+  // 选中行的底色必须**不透明** —— 用半透明的话，行底下的红色删除按钮会透出来，
+  // 选中一条记录整行就泛红（这个 bug 是靠肉眼看深色截图发现的）
+  const bg = await faces.nth(0).evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(bg, `选中行底色是半透明的：${bg}`).not.toMatch(/rgba\([^)]*,\s*0?\.[0-9]+\)$/);
   await faces.nth(1).click();
   await expect(page.getByText('并排对比')).toBeVisible();
   await page.getByRole('button', { name: '收起' }).click();

@@ -19,6 +19,9 @@
   --gain: #047857;
   --loss: #dc2626;
   --highlight-bg: rgba(65, 95, 255, 0.078);
+  /* 选中行的**不透明**底色。不能用 --highlight-bg：它是半透明的，
+     行底下的红色删除按钮会透出来，选中一条记录整行会泛红。 */
+  --highlight-surface: #ecefff;
 
   /* ---- 形状与间距（对应 Spacing）---- */
   --card-gap: 16px;
@@ -65,6 +68,7 @@
   --gain: #34d399;
   --loss: #f87171;
   --highlight-bg: rgba(65, 95, 255, 0.18);
+  --highlight-surface: #272f4d;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -556,7 +560,7 @@ body {
   will-change: transform;
 }
 .record.is-selected .record-face {
-  background: var(--highlight-bg);
+  background: var(--highlight-surface);
 }
 .record-bar {
   width: 4px;
