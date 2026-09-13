@@ -212,6 +212,12 @@ IndexedDB 会失败：Safari 无痕模式、配额耗尽、用户禁用存储、
 
 > 这三条之前都没做：保存失败会变成未处理的 Promise 异常，记录页则静默显示成空列表。
 
+## 线上地址
+
+**https://lucien575.github.io/financial-return-calculator/**
+
+已部署并验证：**整套 E2E（29 个）直接对着线上 HTTPS 地址跑，全部通过**。
+
 ## 部署
 
 ```bash
@@ -229,7 +235,31 @@ IndexedDB 会失败：Safari 无痕模式、配额耗尽、用户禁用存储、
 https://<用户名>.github.io/financial-return-calculator/
 ```
 
-工作流里 `actions/configure-pages` 带了 `enablement: true`，仓库没手动开 Pages 时也会自动开启。
+### ⚠️ 一个实测踩到的坑
+
+**不要给 `actions/configure-pages` 加 `enablement: true`。**
+`GITHUB_TOKEN` 没有创建 Pages 站点的权限，加了会直接失败：
+
+```
+##[error]Create Pages site failed. Error: Resource not accessible by integration
+```
+
+Pages 必须由**仓库管理员**先开启一次，两种方式：
+
+- 网页：仓库 → Settings → Pages → Build and deployment → Source 选 **GitHub Actions**
+- 命令行（需要 admin 权限的 token）：
+  ```bash
+  curl -X POST -H "Authorization: Bearer <token>" \
+    https://api.github.com/repos/<用户名>/financial-return-calculator/pages \
+    -d '{"build_type":"workflow"}'
+  ```
+
+开启之后工作流里的 `configure-pages` 只需要读取配置，不再需要建站权限。
+
+### 另一个坑：首次工作流可能长时间排队
+
+新仓库第一次触发时，运行可能停在 `queued` 十几分钟不动。
+取消后重新触发（`workflow_dispatch`）可以立刻把它顶出队列。
 
 ### 部署相关的几处约定
 
