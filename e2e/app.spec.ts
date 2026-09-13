@@ -251,7 +251,9 @@ test('PWA 基础：manifest 可解析、SW 已注册、无控制台报错', asyn
   const scopes = await page.evaluate(() =>
     navigator.serviceWorker.getRegistrations().then((r) => r.map((x) => x.scope)),
   );
-  expect(scopes).toEqual(['http://localhost:4173/financial-return-calculator/']);
+  // 不写死地址：同一套测试要能跑在本地预览与线上部署上
+  const expectedScope = new URL('.', page.url().split('#')[0]).href;
+  expect(scopes).toEqual([expectedScope]);
 
   expect(errors).toEqual([]);
 });
@@ -296,13 +298,17 @@ test('离线前置条件：SW 已接管，且 shell 与构建产物都进了缓�
 test('不发任何网络请求（零联网承诺）', async ({ page }) => {
   const external: string[] = [];
   const failed: string[] = [];
+  // 用「页面自身的 origin」作基准，这样本地预览和线上部署都能跑
+  let selfOrigin = '';
   page.on('request', (r) => {
     const url = new URL(r.url());
-    if (url.origin !== 'http://localhost:4173') external.push(r.url());
+    if (!selfOrigin) return; // 第一个请求就是页面本身，等它确定 origin
+    if (url.origin !== selfOrigin) external.push(r.url());
   });
   page.on('requestfailed', (r) => failed.push(r.url()));
 
   await page.goto('./');
+  selfOrigin = new URL(page.url()).origin;
   await focusRow(page, '买入金额');
   await typeNumber(page, '40125.71');
   await focusRow(page, '持有收益');
