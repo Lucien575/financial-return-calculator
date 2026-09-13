@@ -94,6 +94,25 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 可点元素统一用 manipulation：
+ * 只禁用「双击缩放」，**保留双指缩放** —— 所以 WCAG 1.4.4（文本可缩放）依然满足。
+ *
+ * 必须这么做：为了无障碍去掉了 viewport 里的 maximum-scale/user-scalable 之后，
+ * iOS 的双击缩放被重新启用，连点三下数字键盘就会被识别成双击手势，把整页放大。
+ * 顺带也消掉了老浏览器上 300ms 的点击延迟。
+ *
+ * 例外：.record-face 需要 pan-y 来支持左滑删除，见下方单独规则。 */
+button,
+input,
+select,
+textarea,
+[role='button'],
+[role='tab'],
+.field-row,
+.settings-row {
+  touch-action: manipulation;
+}
+
 html,
 body {
   height: 100%;
