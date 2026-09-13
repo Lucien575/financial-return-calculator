@@ -2,10 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <!-- viewport-fit=cover 才能让 env(safe-area-inset-*) 生效（iPhone 刘海/手势条） -->
+    <!-- viewport-fit=cover 才能让 env(safe-area-inset-*) 生效（iPhone 刘海/手势条）。
+         不禁用缩放：user-scalable=no 会违反 WCAG 1.4.4（文本可缩放）。
+         iOS 聚焦时自动放大改用「输入控件字号 ≥16px」来避免，不牺牲缩放能力。 -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>收益计算器</title>
     <meta name="description" content="理财年化收益计算器：金额法与净值法，本地计算，零网络请求。" />

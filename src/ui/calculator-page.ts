@@ -45,7 +45,12 @@ function makeRow(opts: { withDate?: boolean }): Row {
     rowChildren.push(dateInput);
   }
 
-  const rowEl = h('button', { class: 'field-row', type: 'button' }, ...rowChildren);
+  // 日期行里要放原生 <input type="date">，若外层再套 <button> 就成了嵌套交互控件
+  // （axe 的 nested-interactive 违规，也会让读屏软件行为不可预期）。
+  // 所以日期行用 div 承载，交互完全交给里面的 input。
+  const rowEl = opts.withDate
+    ? h('div', { class: 'field-row' }, ...rowChildren)
+    : h('button', { class: 'field-row', type: 'button' }, ...rowChildren);
   const root = h('div', { class: 'field' }, rowEl, divider, msg);
   return { root, icon, label, value, unit, divider, msg, dateInput };
 }
@@ -326,8 +331,8 @@ export function createCalculatorPage(store: CalculatorStore, deps: CalculatorPag
     row.msg.className = opts.error ? 'field-msg is-error' : 'field-msg';
     row.msg.style.display = message ? '' : 'none';
 
-    const rowBtn = row.root.querySelector('.field-row') as HTMLButtonElement;
-    rowBtn.disabled = opts.enabled === false;
+    const rowBtn = row.root.querySelector('.field-row');
+    if (rowBtn instanceof HTMLButtonElement) rowBtn.disabled = opts.enabled === false;
   }
 
   function renderMetrics(metrics: Metric[]): void {

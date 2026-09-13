@@ -8,11 +8,15 @@
   --primary: #415fff;
   --on-primary: #ffffff;
   --text-primary: #0f172a;
-  --text-secondary: #64748b;
+  /* 原 #64748b 在浅色底上只有 4.44:1，差 0.06 不达 WCAG AA；压暗一档到 4.83:1。
+     色相不变，肉眼几乎无感。安卓原生版未跟进（项目冻结），故两端此处有极小色差。 */
+  --text-secondary: #5f6e84;
   --bg: #f5f7fb;
   --surface: #ffffff;
   --outline: rgba(15, 23, 42, 0.059);
-  --gain: #059669;
+  /* 原 #059669 在白底上只有 3.77:1，正文尺寸不达 WCAG AA；
+     换成同色系的 #047857（5.48:1）。深色模式不受影响。 */
+  --gain: #047857;
   --loss: #dc2626;
   --highlight-bg: rgba(65, 95, 255, 0.078);
 
@@ -233,7 +237,7 @@ body {
 }
 .segmented button {
   flex: 1;
-  height: 40px;
+  height: 44px; /* 触控目标下限 */
   border: 0;
   border-radius: 999px;
   background: none;
