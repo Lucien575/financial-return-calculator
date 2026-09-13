@@ -1,4 +1,4 @@
-import { h, clear, toneClass, haptic } from './dom';
+import { h, clear, toneClass, haptic, prefersReducedMotion } from './dom';
 import { icons } from './icons';
 import { applyKey, NUMBER_KEYS, KEY_DONE } from '../core/keypad-reducer';
 import {
@@ -248,6 +248,7 @@ export function createCalculatorPage(store: CalculatorStore, deps: CalculatorPag
   }
 
   let activeField: ActiveField | null = null;
+  let lastScrolledField: ActiveField | null = null;
 
   function focusField(field: ActiveField): void {
     // 日期行不走数字键盘
@@ -491,7 +492,46 @@ export function createCalculatorPage(store: CalculatorStore, deps: CalculatorPag
     (saveBtn as HTMLButtonElement).disabled = !canAct;
     (shareBtn as HTMLButtonElement).disabled = !canAct;
 
+    const keypadWasVisible = keypad.style.display !== 'none';
     keypad.style.display = activeField ? '' : 'none';
+
+    // 键盘弹出后必须保证「正在编辑的那一行」还在视野里 ——
+    // 横屏或矮屏下键盘会占掉大半屏幕，不滚动的话用户看不见自己在输什么。
+    if (activeField && activeField !== lastScrolledField) {
+      lastScrolledField = activeField;
+      const row = rowOf(activeField);
+      if (row) {
+        // 等键盘完成布局再滚，否则算出来的位置是错的
+        requestAnimationFrame(() => {
+          // 用瞬时滚动：键盘弹出时再播一段滚动动画只会让人以为界面卡了
+          void prefersReducedMotion;
+          row.scrollIntoView({ block: 'center', behavior: 'auto' });
+        });
+      }
+    } else if (!activeField && keypadWasVisible) {
+      lastScrolledField = null;
+    }
+  }
+
+  /** 字段 -> 它所在的行元素（用于把该行滚进视野） */
+  function rowOf(field: ActiveField): HTMLElement | null {
+    const isAmount = store.get().mode === 'AMOUNT';
+    switch (field) {
+      case 'BUY_AMOUNT':
+      case 'BUY_NAV':
+        return r1.root;
+      case 'EARN_AMOUNT':
+      case 'CURRENT_NAV':
+        return r2.root;
+      case 'BUY_DATE':
+        return rBuyDate.root;
+      case 'CURRENT_DATE':
+        return rCurDate.root;
+      case 'DAYS':
+        return rDays.root;
+      default:
+        return isAmount ? r1.root : r1.root;
+    }
   }
 
   update();

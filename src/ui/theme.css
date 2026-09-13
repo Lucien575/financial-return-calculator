@@ -804,3 +804,26 @@ body {
   cursor: pointer;
   border-radius: 8px;
 }
+
+/* ---------- 矮视口（横屏、小屏）----------
+ * 横屏时 360px 高：键盘 4 行 × 52px + 底部导航会把内容区挤到几乎没有，
+ * 用户看不见自己在输什么。这里压缩键盘并收紧行距。 */
+@media (max-height: 560px) {
+  .keypad button {
+    height: 40px;
+    margin: 3px;
+  }
+  .keypad {
+    padding: 6px;
+  }
+}
+@media (max-height: 420px) {
+  .keypad button {
+    height: 34px;
+    margin: 2px;
+    font-size: 14px;
+  }
+  .keypad {
+    padding: 4px;
+  }
+}
