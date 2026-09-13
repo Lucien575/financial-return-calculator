@@ -46,11 +46,12 @@ jobs:
       - name: 构建
         run: npm run build
 
-      # enablement: true —— 仓库如果还没在 Settings 里开 Pages，这一步会直接帮你开，
-      # 省掉一次手工操作（需要上面的 pages: write 权限）
+      # 注意：这里**不能**加 enablement: true。
+      # GITHUB_TOKEN 没有创建 Pages 站点的权限，加了会以
+      # "Resource not accessible by integration" 直接失败（已实测踩过）。
+      # Pages 需要仓库管理员在 Settings → Pages 里开启一次，
+      # 或者由有 admin 权限的 token 调 POST /repos/{owner}/{repo}/pages 开启。
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
