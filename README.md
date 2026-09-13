@@ -211,3 +211,31 @@ IndexedDB 会失败：Safari 无痕模式、配额耗尽、用户禁用存储、
 - **记录页显示错误态**，不能显示成「还没有记录」—— 那会让用户以为自己的记录丢了
 
 > 这三条之前都没做：保存失败会变成未处理的 Promise 异常，记录页则静默显示成空列表。
+
+## 部署
+
+```bash
+./scripts/deploy.sh <你的GitHub用户名>
+```
+
+脚本会依次做：本地校验（与 CI 同一套命令）→ 配 remote → 推送到 `main` → 打印后续步骤。
+
+前置条件只有一个：**GitHub 上先建好公开仓库 `financial-return-calculator`**
+（免费账号的 Pages 只对公开仓库开放）。
+
+推送后 GitHub Actions 自动构建部署，约 1-2 分钟。线上地址：
+
+```
+https://<用户名>.github.io/financial-return-calculator/
+```
+
+工作流里 `actions/configure-pages` 带了 `enablement: true`，仓库没手动开 Pages 时也会自动开启。
+
+### 部署相关的几处约定
+
+| 位置 | 值 | 说明 |
+|---|---|---|
+| `vite.config.ts` 的 `BASE_PATH` | `/financial-return-calculator/` | 必须与仓库名一致（Pages 的 URL 路径**区分大小写**） |
+| `manifest.webmanifest` 的 `start_url` / `scope` / `icons[].src` | 同上 | 改仓库名要一起改 |
+| `public/.nojekyll` | 空文件 | Pages 默认跑 Jekyll，会忽略下划线开头的文件 |
+| SW 注册路径 | `${BASE_URL}sw.js` | SW 必须在部署根目录，作用域才够 |

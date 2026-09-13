@@ -34,7 +34,7 @@ jobs:
       - name: 校验黄金值 fixture 未被意外改动
         run: |
           cd docs/reference
-          shasum -a 256 -c golden-values.sha256
+          sha256sum -c golden-values.sha256 2>/dev/null || shasum -a 256 -c golden-values.sha256
           echo "fixture 与安卓版共享，哈希一致说明两端行为契约未分叉。"
 
       - name: 类型检查
@@ -46,7 +46,11 @@ jobs:
       - name: 构建
         run: npm run build
 
+      # enablement: true —— 仓库如果还没在 Settings 里开 Pages，这一步会直接帮你开，
+      # 省掉一次手工操作（需要上面的 pages: write 权限）
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
