@@ -284,3 +284,23 @@ Pages 必须由**仓库管理员**先开启一次，两种方式：
 
 约 440ms 是页面启动 + Service Worker 的固定开销，**列表本身 2000 条也只增加约 200ms**。
 按真实使用频率（每月几笔，多年累计几百条）不需要虚拟化 —— 所以**故意不做**，避免为不会发生的场景增加复杂度。
+
+## 可安装性审计（针对线上部署实测）
+
+对着 https://lucien575.github.io/financial-return-calculator/ 逐项核对 Chrome 的安装判定要件：
+
+| 要件 | 结果 |
+|---|---|
+| manifest 可访问、Content-Type 正确 | ✅ |
+| name / short_name / display=standalone | ✅ |
+| start_url 与 scope 一致且为 `/financial-return-calculator/` | ✅ |
+| background_color / theme_color | ✅ |
+| 192×192 图标（实际尺寸核对） | ✅ |
+| 512×512 图标（WebAPK 必需，实际尺寸核对） | ✅ |
+| maskable 图标 | ✅ |
+| sw.js 可取且含 `fetch` 事件监听 | ✅ |
+| SW 状态 = activated 且已接管页面 | ✅ |
+
+**关于 `beforeinstallprompt`**：桌面版 Chrome 对该事件设有**用户参与度门槛**，自动化环境下不会累积到阈值，
+所以脚本里测不到 —— 这是桌面端的预期行为，不是缺陷。安卓端不设这个门槛，
+这也是为什么在 vivo X200s 上打开时安装横幅会立刻出现。
