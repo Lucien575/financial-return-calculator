@@ -1,6 +1,7 @@
 import './ui/theme.css';
 import { createApp } from './app';
 import { setupInstallPrompt } from './ui/install-prompt';
+import { setupUpdatePrompt } from './ui/update-prompt';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('缺少 #app 挂载点');
@@ -9,6 +10,9 @@ createApp(mount);
 
 // 安装引导：安卓走 beforeinstallprompt，iOS 给图文说明
 setupInstallPrompt();
+
+// 新版本提示：sw.js 刻意不自作主张 skipWaiting，由这里征求用户同意
+setupUpdatePrompt();
 
 // Service Worker：离线可用。开发环境不注册，避免缓存干扰调试。
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
